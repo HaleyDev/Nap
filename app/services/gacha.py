@@ -15,6 +15,15 @@ randomizer = Random()
 settings = get_settings()
 
 
+def _match_keyword(recipe: Recipe, keyword: str) -> bool:
+    kw = keyword.lower()
+    if any(kw in ingredient.lower() for ingredient in (recipe.ingredients or [])):
+        return True
+    if any(kw in tag.lower() for tag in (recipe.keywords or [])):
+        return True
+    return False
+
+
 def _pick_weighted_rarity(available: dict[int, list[Recipe]], allowed: set[int] | None = None) -> int:
     rarity_candidates = [
         rarity for rarity, recipes in available.items() if recipes and (allowed is None or rarity in allowed)
@@ -38,13 +47,22 @@ def _pick_recipe(available: dict[int, list[Recipe]], allowed: set[int] | None = 
     return randomizer.choice(available[rarity])
 
 
-async def wish_recipes(session: AsyncSession, count: int, category: str | None = None) -> list[Recipe]:
+async def wish_recipes(
+    session: AsyncSession,
+    count: int,
+    category: str | None = None,
+    keyword: str | None = None,
+) -> list[Recipe]:
     statement = select(Recipe)
     if category:
         statement = statement.where(Recipe.category == category)
 
     result = await session.execute(statement)
     recipes = list(result.scalars().all())
+
+    if keyword:
+        recipes = [r for r in recipes if _match_keyword(r, keyword)]
+
     if not recipes:
         return []
 
@@ -72,3 +90,19 @@ async def wish_recipes(session: AsyncSession, count: int, category: str | None =
         recipe.last_cooked = now
 
     return drawn
+
+
+async def recommend_per_category(session: AsyncSession) -> list[Recipe]:
+    result = await session.execute(select(Recipe))
+    recipes = list(result.scalars().all())
+    if not recipes:
+        return []
+
+    by_category: dict[str, list[Recipe]] = defaultdict(list)
+    for recipe in recipes:
+        by_category[recipe.category].append(recipe)
+
+    picks: list[Recipe] = []
+    for _category, group in sorted(by_category.items()):
+        picks.append(randomizer.choice(group))
+    return picks

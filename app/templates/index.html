@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | 食谱祈愿</title>
+    <title>{{ title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,99 +13,92 @@
 <body class="wish-page bg-[#05070d] text-slate-100">
     <canvas id="bg-canvas"></canvas>
 
-    <main class="relative z-10 min-h-screen overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-10">
-        <section class="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-7xl flex-col justify-between">
-            <div class="flex items-start justify-between gap-4">
-                <div class="space-y-3">
-                    <div class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs tracking-[0.35em] text-slate-300 backdrop-blur">
-                        今晚吃什么 · 小小抽签盒
-                    </div>
-                    <div>
-                        <h1 class="text-4xl font-black tracking-[0.12em] text-white sm:text-5xl lg:text-7xl">今晚吃点什么</h1>
-                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                            不用纠结晚饭安排了。轻轻点一下，从你自己的菜谱里抽一份今天的温暖餐桌灵感。
-                        </p>
-                    </div>
-                </div>
-                <a href="/admin" class="hidden rounded-full border border-amber-300/30 bg-amber-200/10 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-200/20 sm:inline-flex">
-                    进入菜谱库管理
-                </a>
+    <!-- ===== 配置页（首屏）===== -->
+    <main id="config-view" class="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
+        <section class="w-full max-w-lg space-y-6">
+            <div class="text-center">
+                <h1 class="text-3xl font-black tracking-[0.12em] text-white sm:text-4xl">吃点什么</h1>
+                <p class="mt-2 text-sm text-slate-400">从你的菜谱库里帮你挑几道灵感</p>
             </div>
 
-            <section class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-end">
-                <div class="panel-shell rounded-[28px] border border-white/10 px-5 py-5 shadow-2xl shadow-black/40 sm:px-7 sm:py-7">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Dinner Picker</p>
-                            <h2 class="mt-2 text-xl font-bold text-white sm:text-2xl">帮你挑一道顺手又喜欢的菜</h2>
-                        </div>
-                        <div id="status-pill" class="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-100">
-                            准备好了
-                        </div>
-                    </div>
-
-                    <div class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px] sm:items-end">
-                        <label class="form-block text-slate-200">
-                            <span>想先看看哪一类</span>
-                            <select id="wish-category" class="bg-black/20">
-                                <option value="">全部分类</option>
-                                {% for category in categories %}
-                                <option value="{{ category }}">{{ category }}</option>
-                                {% endfor %}
-                            </select>
-                        </label>
-                        <div class="rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
-                            按分类抽取时，只会从当前分类里帮你挑选。
-                        </div>
-                    </div>
-
-                    <div class="mt-6 grid gap-3 sm:grid-cols-2">
-                        <button type="button" data-count="1" class="wish-trigger btn-industrial w-full rounded-[20px] px-5 py-4 text-left">
-                            <span class="block text-xs uppercase tracking-[0.3em] text-slate-300">Pick One</span>
-                            <span class="mt-2 block text-2xl font-bold text-white">帮我挑 1 道</span>
-                            <span class="mt-1 block text-sm text-slate-400">适合立刻决定今晚吃什么</span>
-                        </button>
-                        <button type="button" data-count="10" class="wish-trigger btn-industrial btn-industrial-gold w-full rounded-[20px] px-5 py-4 text-left">
-                            <span class="block text-xs uppercase tracking-[0.3em] text-slate-800">Pick Ten</span>
-                            <span class="mt-2 block text-2xl font-bold text-slate-950">给我 10 个灵感</span>
-                            <span class="mt-1 block text-sm text-slate-800/70">一次多看几道，慢慢挑也没关系</span>
-                        </button>
-                    </div>
-
-                    <div class="mt-6 grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 sm:grid-cols-3">
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.28em] text-slate-500">五星</p>
-                            <p class="mt-2 text-2xl font-black text-amber-300">{{ rarity_percentages[5] }}%</p>
-                        </div>
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.28em] text-slate-500">四星</p>
-                            <p class="mt-2 text-2xl font-black text-fuchsia-300">{{ rarity_percentages[4] }}%</p>
-                        </div>
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.28em] text-slate-500">三星</p>
-                            <p class="mt-2 text-2xl font-black text-sky-300">{{ rarity_percentages[3] }}%</p>
-                        </div>
-                    </div>
-
-                    <a href="/admin" class="mt-4 inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 sm:hidden">
-                        打开管理页
-                    </a>
+            <div class="panel-shell rounded-[28px] border border-white/10 p-5 sm:p-7 space-y-5">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <label class="form-block text-slate-200">
+                        <span>菜品类别</span>
+                        <select id="wish-category" class="bg-black/20">
+                            <option value="">全部分类</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="form-block text-slate-200">
+                        <span>稀有度</span>
+                        <select id="wish-rarity" class="bg-black/20">
+                            <option value="">不限</option>
+                            <option value="5">★★★★★ 五星</option>
+                            <option value="4">★★★★ 四星</option>
+                            <option value="3">★★★ 三星</option>
+                        </select>
+                    </label>
                 </div>
 
-                <div class="panel-shell rounded-[28px] border border-white/10 p-5 sm:p-6">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.28em] text-slate-500">Tonight's Options</p>
-                            <h2 class="mt-2 text-xl font-bold text-white">今晚可以考虑这些菜</h2>
-                        </div>
-                        <div id="result-count" class="text-sm text-slate-400">0 张结果</div>
+                <label class="form-block text-slate-200">
+                    <span>关键字筛选</span>
+                    <input id="wish-keyword" type="text" placeholder="输入食材或特点，如：辣、牛肉、清淡…" class="bg-black/20">
+                </label>
+
+                <label class="form-block text-slate-200">
+                    <span>灵感数量</span>
+                    <div class="flex items-center gap-3">
+                        <input id="wish-count" type="range" min="1" max="20" value="1" class="wish-range flex-1">
+                        <span id="wish-count-display" class="min-w-[2.5rem] text-center text-xl font-black text-amber-300">1</span>
                     </div>
-                    <div id="cards-wrapper" class="mt-5 flex min-h-[350px] gap-4 overflow-x-auto pb-2 sm:min-h-[420px] sm:flex-wrap sm:justify-center sm:overflow-visible"></div>
+                </label>
+
+                <p class="text-xs text-slate-500 leading-5">按分类或关键字筛选时，只会从匹配的菜谱中抽取。拖动滑块选择想要的灵感数量。</p>
+
+                <button type="button" id="wish-go" class="btn-industrial btn-industrial-gold w-full rounded-[20px] px-5 py-4 text-center">
+                    <span class="block text-2xl font-black text-slate-950">开始抽取</span>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+                <button type="button" id="show-recommend" class="text-sm text-slate-400 underline underline-offset-4 hover:text-slate-200 transition">随机每类推荐一道</button>
+                <a href="/admin" class="text-sm text-slate-400 underline underline-offset-4 hover:text-slate-200 transition">菜谱管理</a>
+            </div>
+
+            <!-- 历史记录面板 -->
+            <div id="history-panel" class="hidden">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-slate-300">已确认的选择</h3>
+                    <button type="button" id="clear-history" class="text-xs text-slate-500 hover:text-rose-300 transition">清空记录</button>
                 </div>
-            </section>
+                <div id="history-list" class="mt-3 space-y-2"></div>
+            </div>
         </section>
     </main>
 
+    <!-- ===== 结果页（全屏）===== -->
+    <div id="result-view" class="result-view hidden">
+        <div class="result-view-inner">
+            <div class="flex items-center justify-between gap-3 px-4 pt-6 sm:px-8">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.28em] text-slate-500">Results</p>
+                    <h2 class="mt-1 text-xl font-bold text-white sm:text-2xl">灵感结果</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="result-count" class="text-sm text-slate-400">0 道</span>
+                    <button type="button" id="confirm-selection" class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-300/20">确认选择</button>
+                    <button type="button" id="back-to-config" class="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/5">返回</button>
+                </div>
+            </div>
+
+            <div id="cards-wrapper" class="mt-5 flex flex-wrap justify-center gap-5 px-4 pb-10 sm:px-8"></div>
+        </div>
+    </div>
+
+    <!-- ===== Loading ===== -->
     <div id="loading-overlay" class="overlay hidden">
         <div class="meteor-layer">
             <div class="meteor-core"></div>
@@ -113,34 +106,33 @@
         </div>
     </div>
 
+    <!-- ===== Detail Modal ===== -->
     <div id="detail-modal" class="modal-shell hidden">
         <div class="modal-card">
-            <button type="button" id="close-modal" class="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/30 px-3 py-2 text-xs text-white">
-                关闭
-            </button>
+            <button type="button" id="close-modal" class="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/30 px-3 py-2 text-xs text-white">关闭</button>
             <div id="detail-hero" class="detail-hero"></div>
             <div class="space-y-5 p-5 sm:p-6">
                 <div>
                     <div id="detail-rarity" class="flex gap-1 text-xl"></div>
                     <h3 id="detail-title" class="mt-3 text-2xl font-black text-white sm:text-3xl"></h3>
                     <p id="detail-category" class="mt-2 text-sm uppercase tracking-[0.28em] text-slate-400"></p>
-                    <p id="detail-description" class="mt-3 text-sm leading-7 text-slate-200"></p>
                 </div>
                 <div>
-                    <h4 class="section-title">食材准备</h4>
+                    <h4 class="section-title">关键词</h4>
+                    <div id="detail-keywords" class="mt-3 flex flex-wrap gap-2"></div>
+                </div>
+                <div>
+                    <h4 class="section-title">食材</h4>
                     <div id="detail-ingredients" class="mt-3 flex flex-wrap gap-2"></div>
-                </div>
-                <div>
-                    <h4 class="section-title">烹饪要点</h4>
-                    <ol id="detail-steps" class="mt-3 space-y-3 text-sm leading-7 text-slate-200"></ol>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ===== Card Template ===== -->
     <template id="card-template">
-        <article class="wish-card-shell w-[78vw] max-w-[220px] min-w-[220px] sm:w-[180px] sm:min-w-[180px]">
-            <button type="button" class="wish-card group relative h-[340px] w-full cursor-pointer rounded-[24px] bg-transparent text-left sm:h-[390px]">
+        <article class="wish-card-shell">
+            <button type="button" class="wish-card group relative h-[360px] w-full cursor-pointer rounded-[24px] bg-transparent text-left sm:h-[420px]">
                 <span class="wish-card-face wish-card-back"></span>
                 <span class="wish-card-face wish-card-front">
                     <span class="wish-card-gloss"></span>

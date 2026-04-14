@@ -44,7 +44,6 @@ async def home(request: Request) -> HTMLResponse:
             "request": request,
             "title": settings.app_title,
             "categories": sorted(VALID_CATEGORIES),
-            "rarity_percentages": settings.rarity_percentages,
         },
     )
 

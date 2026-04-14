@@ -15,9 +15,8 @@ class Recipe(Base):
     category: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     rarity: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     img_url: Mapped[str] = mapped_column(Text, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
+    keywords: Mapped[list[str]] = mapped_column(JSONB, nullable=False, server_default="[]")
     ingredients: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-    steps: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     last_cooked: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

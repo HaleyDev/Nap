@@ -14,16 +14,19 @@ def _normalize_text_list(value: list[str], field_name: str) -> list[str]:
     return cleaned
 
 
+def _normalize_optional_text_list(value: list[str]) -> list[str]:
+    return [item.strip() for item in value if item and item.strip()]
+
+
 class RecipeCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     category: str
     rarity: int
     img_url: str = Field(min_length=1)
-    description: str = Field(min_length=1)
+    keywords: list[str] = Field(default_factory=list)
     ingredients: list[str]
-    steps: list[str]
 
-    @field_validator("name", "img_url", "description")
+    @field_validator("name", "img_url")
     @classmethod
     def validate_non_empty_text(cls, value: str) -> str:
         cleaned = value.strip()
@@ -46,15 +49,15 @@ class RecipeCreate(BaseModel):
             raise ValueError("rarity 只能是 3、4 或 5")
         return value
 
+    @field_validator("keywords")
+    @classmethod
+    def validate_keywords(cls, value: list[str]) -> list[str]:
+        return _normalize_optional_text_list(value)
+
     @field_validator("ingredients")
     @classmethod
     def validate_ingredients(cls, value: list[str]) -> list[str]:
         return _normalize_text_list(value, "ingredients")
-
-    @field_validator("steps")
-    @classmethod
-    def validate_steps(cls, value: list[str]) -> list[str]:
-        return _normalize_text_list(value, "steps")
 
 
 class RecipeRead(BaseModel):
@@ -65,10 +68,13 @@ class RecipeRead(BaseModel):
     category: str
     rarity: int
     img_url: str
-    description: str
+    keywords: list[str]
     ingredients: list[str]
-    steps: list[str]
     last_cooked: datetime | None
+
+
+class RecipeBatchImport(BaseModel):
+    recipes: list[RecipeCreate]
 
 
 class ImageUploadResponse(BaseModel):
