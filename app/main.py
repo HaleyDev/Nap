@@ -1,20 +1,18 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.config import get_settings
 from app.database import Base, engine
 from app.routers.api import router as api_router
-from app.schemas import VALID_CATEGORIES
 
 
 BASE_DIR = Path(__file__).resolve().parent
-TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
+FRONTEND_DIST = BASE_DIR / "templates"
 
 
 @asynccontextmanager
@@ -29,29 +27,33 @@ async def lifespan(_: FastAPI):
 
 settings = get_settings()
 app = FastAPI(title=settings.app_title, lifespan=lifespan)
+
+# Mount upload static files (for recipe images)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# Mount Vue SPA built assets
+if (FRONTEND_DIST / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
 
 app.include_router(api_router)
 
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={
-            "request": request,
-            "title": settings.app_title,
-            "categories": sorted(VALID_CATEGORIES),
-        },
+def _serve_spa() -> HTMLResponse:
+    """Serve the Vue SPA index.html (falls back to a placeholder if not built yet)."""
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))  # type: ignore[return-value]
+    return HTMLResponse(
+        "<h2>Frontend not built yet. Run: <code>cd frontend && npm run build</code></h2>",
+        status_code=200,
     )
 
 
-@app.get("/admin", response_class=HTMLResponse)
-async def admin(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request,
-        name="admin.html",
-        context={"request": request, "title": settings.app_title},
-    )
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def home() -> HTMLResponse:
+    return _serve_spa()
+
+
+@app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
+async def admin() -> HTMLResponse:
+    return _serve_spa()
