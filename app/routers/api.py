@@ -46,7 +46,7 @@ async def get_wish_result(
         if normalized_category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"当前分类"{normalized_category}"还没有可抽取的菜谱",
+                detail=f'当前分类"{normalized_category}"还没有可抽取的菜谱',
             )
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="当前没有可抽取的食谱，请先录入数据")
     return [RecipeRead.model_validate(item) for item in results]
@@ -164,7 +164,7 @@ async def get_wish_result(
         if normalized_category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"当前分类“{normalized_category}”还没有可抽取的菜谱",
+                detail=f"当前分类[{normalized_category}]还没有可抽取的菜谱",
             )
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="当前没有可抽取的食谱，请先录入数据")
     return [RecipeRead.model_validate(item) for item in results]
